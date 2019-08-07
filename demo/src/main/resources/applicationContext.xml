@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 自动扫描注解的bean -->
+    <context:component-scan base-package="com.company"/>
+
+    <!-- 引入jdbc配置文件 -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:properties/*.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName">
+            <value>${jdbc_driverClassName}</value>
+        </property>
+        <property name="url">
+            <value>${jdbc_url}</value>
+        </property>
+        <property name="username">
+            <value>${jdbc_username}</value>
+        </property>
+        <property name="password">
+            <value>${jdbc_password}</value>
+        </property>
+    </bean>
+
+    <!-- 自动扫描了所有的XxxxMapper.xml对应的mapper接口文件，这样就不用一个一个手动配置Mpper的映射了，只要Mapper接口类和Mapper映射文件对应起来就可以了。 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.company.dao"></property>
+    </bean>
+    <!-- 配置Mybatis的文件 ，mapperLocations配置**Mapper.xml文件位置，configLocation配置mybatis-config文件位置-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"></property>
+        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+    </bean>
+
+    <!-- AOP Transaction 事务配置-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!--<tx:advice id="txAdvice" transaction-manager="transactionManager">-->
+    <!--<tx:attributes>-->
+    <!--<tx:method name="select*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="true"/>-->
+    <!--<tx:method name="find*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="true"/>-->
+    <!--<tx:method name="save*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="false"/>-->
+    <!--<tx:method name="update*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="false"/>-->
+    <!--<tx:method name="delete*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="false"/>-->
+    <!--<tx:method name="trans*" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" read-only="false"/>-->
+    <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+    <!--<aop:config>-->
+    <!--<aop:pointcut id="pointCut" expression="execution(* com.company.service.impl..*.*(..))"/>-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="pointCut"/>-->
+    <!--</aop:config>-->
+</beans>
